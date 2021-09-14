@@ -1,0 +1,14 @@
+{
+  "name": "melonsbot",
+  "version": "1.0.0",
+  "description": "MelonsBot for Discord Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "nerdic.net",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.5.3"
+  }
+}
