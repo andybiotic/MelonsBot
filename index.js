@@ -48,6 +48,11 @@ client.on("message", function(message) {
     }
   }
 
+  function editNickName(nickname) {
+    const nameComponents = nickname.split(" ");
+    return nameComponents[0]
+  }
+
   async function postRaceControlMessage(channel, int) {
     var messageDict = {
       0: "Race Control is actively monitoring this channel. When reporting incidents, please remember to include the car number, lap number and any other details you feel are important.",
@@ -62,15 +67,15 @@ client.on("message", function(message) {
     
     try {
       const nickname = await setNickname()
-      const sassyString = setSassyString(nickname)
-      messageDict[8] = mergeSassyString(nickname, sassyString);
+      const firstName = editNickName(nickname)
+      console.log(firstName)
+      const sassyString = setSassyString(firstName)
+      messageDict[8] = mergeSassyString(firstName, sassyString);
       client.channels.cache.get(channel).send(messageDict[int]);
-      // 8 works here, but random int doesn't
     } catch {
       console.log("Error.")
     }
   }
-
 
   console.log("MelonsBot: Analysing incoming message.");
 
@@ -87,7 +92,7 @@ client.on("message", function(message) {
       return
     } else if (message.content.startsWith(botTestString)) {
       console.log("1")
-      postRaceControlMessage(channelBot, getRandomInt(totalMessageCount));
+      postRaceControlMessage(channelBot, 8);
       
     }
     return
