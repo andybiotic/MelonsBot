@@ -11,7 +11,7 @@ const channelRaceControl = "845976526747074581"
 const messageBotOperational = "MelonsBot is running!"
 const messageBotStart = "MelonsBot has started..."
 
-const messageCount = 8
+const totalMessageCount = 9
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
@@ -48,8 +48,8 @@ client.on("message", function(message) {
     }
   }
 
-  async function postRaceControlMessage () {
-    const messageDict = {
+  async function postRaceControlMessage(channel, int) {
+    var messageDict = {
       0: "Race Control is actively monitoring this channel. When reporting incidents, please remember to include the car number, lap number and any other details you feel are important.",
       1: "Please remember that Race Control will not comment on individual incidents, except when a penalty is applied.",
       2: "Fun fact: Melons closest relatives are squashes and cucumbers.",
@@ -63,26 +63,14 @@ client.on("message", function(message) {
     try {
       const nickname = await setNickname()
       const sassyString = setSassyString(nickname)
-      client.channels.cache.get(channelBot).send(mergeSassyString(nickname, sassyString));
+      messageDict[8] = mergeSassyString(nickname, sassyString);
+      client.channels.cache.get(channel).send(messageDict[int]);
+      // 8 works here, but random int doesn't
     } catch {
-      console.log("Error")
+      console.log("Error.")
     }
   }
 
-  
-
-  function setMessage() {
-    console.log("7")
-    const testPromise = async () => {
-      console.log("8")
-  
-      
-      console.log("9");
-      return messageDict;
-
-      client.channels.cache.get(channelBot).send(messageDict[8]);
-    }
-  }
 
   console.log("MelonsBot: Analysing incoming message.");
 
@@ -99,8 +87,7 @@ client.on("message", function(message) {
       return
     } else if (message.content.startsWith(botTestString)) {
       console.log("1")
-      // DO NEW STUFF
-      postRaceControlMessage()
+      postRaceControlMessage(channelBot, getRandomInt(totalMessageCount));
       
     }
     return
@@ -112,7 +99,7 @@ client.on("message", function(message) {
     messageCounter += 1;
 
     if (messageCounter % 5 === 0) {
-      client.channels.cache.get(channelRaceControl).send(messageDict[getRandomInt(messageCount)]);
+      postRaceControlMessage(channelRaceControl, getRandomInt(totalMessageCount));
       console.log("MelonsBot: Sent race control message.");
     }
   }
