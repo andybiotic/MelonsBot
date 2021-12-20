@@ -1,9 +1,11 @@
 const Discord = require("discord.js");
 const config = require("./config.json");
 const client = new Discord.Client();
+const { MessageEmbed } = require('discord.js');
 
 const botCheckString = "!bot";
 const botTestString = "!test";
+const botAdvertString = "!ad";
 
 const channelBot = "851879147001348119";
 const channelRaceControl = "845976526747074581"
@@ -43,8 +45,11 @@ client.on("message", function(message) {
       client.channels.cache.get(channelBot).send(messageBotOperational);
       return
     } else if (message.content.startsWith(botTestString)) {
-      postRaceControlMessage(channelBot, 8);
-      
+      // POST TEST TO BOT CHANNEL - CAN CHANGE TEST MESSAGE HERE.
+      postChannelMessage(channelBot, 8);
+    } else if (message.content.startsWith(botAdvertString)) {
+      // POST ADVERT TO CHANNEL - SET CHANNEL HERE.
+      postAdvertMessage(channelBot);
     }
     return
   }
@@ -55,7 +60,8 @@ client.on("message", function(message) {
     messageCounter += 1;
 
     if (messageCounter % 5 === 0) {
-      postRaceControlMessage(channelRaceControl, getRandomInt(totalMessageCount));
+      // AUTO POST RACE CONTROL MESSAGE HERE. ADJUST INT ABOVE FOR POSTING FREQUENCY.
+      postChannelMessage(channelRaceControl, getRandomInt(totalMessageCount));
       console.log("MelonsBot: Sent race control message.");
     }
   }
@@ -84,7 +90,7 @@ client.on("message", function(message) {
     return nameComponents[0]
   }
 
-  async function postRaceControlMessage(channel, int) {
+  async function postChannelMessage(channel, int) {
     var messageDict = {
       0: "Race Control is actively monitoring this channel. When reporting incidents, please remember to include the car number, lap number and any other details you feel are important.",
       1: "Please remember that Race Control will not comment on individual incidents, except when a penalty is applied.",
@@ -101,9 +107,32 @@ client.on("message", function(message) {
       const firstName = editNickName(nickname)
       const sassyString = setSassyString(firstName)
       messageDict[8] = mergeSassyString(firstName, sassyString);
-
-      // SEND MESSAGE TO CHANNEL.
       client.channels.cache.get(channel).send(messageDict[int]);
+    } catch {
+      console.log("Error sending bot message.")
+    }
+  }
+
+  async function createEmbeddedAdvert() {
+    try {
+      const attachment = new Discord.MessageAttachment('./melonsbot/images/discordimage_test.png', 'discordimage_test.png');
+      const exampleEmbed = new MessageEmbed()
+      .setColor('#0099ff')
+	    .setTitle('A Message From Our Sponsors')
+      .attachFiles(attachment)
+      .setImage('attachment://discordimage_test.png');
+      return exampleEmbed
+    } catch {
+      console.log("Error creating Embed")
+      return
+    }
+  }
+
+  async function postAdvertMessage(channel) {
+    try {
+      const embed = await createEmbeddedAdvert()
+      client.channels.cache.get(channel).send(embed)
+      console.log("MelonsBot: Sent advert message.")
     } catch {
       console.log("Error.")
     }
