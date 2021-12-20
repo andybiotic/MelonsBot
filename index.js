@@ -139,10 +139,12 @@ client.on("message", function(message) {
   }
 
   async function postAdvertMessage(channel) {
+    const number = advertCounter
+
     try {
       const embed = await createEmbeddedAdvert()
       client.channels.cache.get(channel).send(embed)
-      console.log("MelonsBot: Sent advert message.")
+      console.log(`MelonsBot: Sent advert message ${number.toString()}/${totalAdvertCount.toString()}.`)
     } catch {
       console.log("Error.")
     }
