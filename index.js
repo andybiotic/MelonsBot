@@ -29,6 +29,37 @@ var messageCounter = 0;
 
 client.on("message", function(message) {
 
+  console.log("MelonsBot: Analysing incoming message.");
+
+  if (message.author.bot) {
+    console.log("MelonsBot: Message was sent by bot. Discarding.");
+    return;
+  }
+
+  if (message.channel.id === channelBot) {
+    console.log("MelonsBot: Message received in Bot channel.");
+    if (message.content.startsWith(botCheckString)) {
+      console.log("MelonsBot: Bot check.");
+      client.channels.cache.get(channelBot).send(messageBotOperational);
+      return
+    } else if (message.content.startsWith(botTestString)) {
+      postRaceControlMessage(channelBot, 8);
+      
+    }
+    return
+  }
+
+  if (message.channel.id === channelRaceControl) {
+    console.log("MelonsBot: Message sent by user in Race Control channel.");
+    lastMessageAuthor = "Test Author";
+    messageCounter += 1;
+
+    if (messageCounter % 5 === 0) {
+      postRaceControlMessage(channelRaceControl, getRandomInt(totalMessageCount));
+      console.log("MelonsBot: Sent race control message.");
+    }
+  }
+
   function setSassyString() {
     let str = ", it's called a motor race. We went car racing."
     return str;
@@ -68,44 +99,13 @@ client.on("message", function(message) {
     try {
       const nickname = await setNickname()
       const firstName = editNickName(nickname)
-      console.log(firstName)
       const sassyString = setSassyString(firstName)
       messageDict[8] = mergeSassyString(firstName, sassyString);
+
+      // SEND MESSAGE TO CHANNEL.
       client.channels.cache.get(channel).send(messageDict[int]);
     } catch {
       console.log("Error.")
-    }
-  }
-
-  console.log("MelonsBot: Analysing incoming message.");
-
-  if (message.author.bot) {
-    console.log("MelonsBot: Message was sent by bot. Discarding.");
-    return;
-  }
-
-  if (message.channel.id === channelBot) {
-    console.log("MelonsBot: Message received in Bot channel.");
-    if (message.content.startsWith(botCheckString)) {
-      console.log("MelonsBot: Bot check.");
-      client.channels.cache.get(channelBot).send(messageBotOperational);
-      return
-    } else if (message.content.startsWith(botTestString)) {
-      console.log("1")
-      postRaceControlMessage(channelBot, 8);
-      
-    }
-    return
-  }
-
-  if (message.channel.id === channelRaceControl) {
-    console.log("MelonsBot: Message sent by user in Race Control channel.");
-    lastMessageAuthor = "Test Author";
-    messageCounter += 1;
-
-    if (messageCounter % 5 === 0) {
-      postRaceControlMessage(channelRaceControl, getRandomInt(totalMessageCount));
-      console.log("MelonsBot: Sent race control message.");
     }
   }
 });
