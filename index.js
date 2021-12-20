@@ -15,7 +15,7 @@ const messageBotOperational = "MelonsBot is running!"
 const messageBotStart = "MelonsBot has started..."
 
 const totalMessageCount = 8
-const totalAdvertCount = 2
+const totalAdvertCount = 15
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
