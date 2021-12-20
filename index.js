@@ -9,11 +9,13 @@ const botAdvertString = "!ad";
 
 const channelBot = "851879147001348119";
 const channelRaceControl = "845976526747074581"
+const channelPaddock = "788509056880738307"
 
 const messageBotOperational = "MelonsBot is running!"
 const messageBotStart = "MelonsBot has started..."
 
-const totalMessageCount = 9
+const totalMessageCount = 8
+const totalAdvertCount = 2
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
@@ -27,7 +29,8 @@ client.on("ready", () => {
   client.channels.cache.get(channelBot).send(messageBotStart);
 });
 
-var messageCounter = 0;
+var messageCounter = 1;
+var advertCounter = 1;
 
 client.on("message", function(message) {
 
@@ -108,22 +111,29 @@ client.on("message", function(message) {
       const sassyString = setSassyString(firstName)
       messageDict[8] = mergeSassyString(firstName, sassyString);
       client.channels.cache.get(channel).send(messageDict[int]);
+      console.log("MelonsBot: Sent auto-message.")
     } catch {
       console.log("Error sending bot message.")
     }
   }
 
   async function createEmbeddedAdvert() {
+    var currentAdvert = advertCounter;
+    if (currentAdvert > totalAdvertCount) {
+      advertCounter = 1
+    }
+
     try {
-      const attachment = new Discord.MessageAttachment('./melonsbot/images/discordimage_test.png', 'discordimage_test.png');
-      const exampleEmbed = new MessageEmbed()
+      const attachment = new Discord.MessageAttachment(`./melonsbot/images/discordimage_${advertCounter}.png`, `discordimage_${advertCounter}.png`);
+      const embeddedAdvert = new MessageEmbed()
       .setColor('#0099ff')
 	    .setTitle('A Message From Our Sponsors')
       .attachFiles(attachment)
-      .setImage('attachment://discordimage_test.png');
-      return exampleEmbed
+      .setImage(`attachment://discordimage_${advertCounter}.png`);
+      advertCounter += 1
+      return embeddedAdvert
     } catch {
-      console.log("Error creating Embed")
+      console.log("Error creating embedded advert.")
       return
     }
   }
