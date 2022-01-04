@@ -4,29 +4,33 @@ const client = new Discord.Client();
 const { MessageEmbed } = require('discord.js');
 
 const messageInfoDict = require('./message_strings.js');
+const botCommands = require('./bot_commands.js');
 
-const botCheckString = "!bot";
-const botTestString = "!test";
-const botRandomString = "!random";
-const botAdvertString = "!ad";
-
+// Channel IDs. Do not change.
 const channelBot = "851879147001348119";
 const channelRaceControl = "845976526747074581";
 const channelPaddock = "788509056880738307";
 
 const messageBotOperational = "MelonsBot is running!";
-const messageBotStart = "MelonsBot has started...";
 
 const totalMessageCount = Object.keys(messageInfoDict).length;
 const totalAdvertCount = 16
 
-console.log("MelonsBot: Up and running!");
+async function postHelpMessage() {
+  try {
+    client.channels.cache.get(channelBot).send(botCommands.helpInformation);
+    console.log("MelonsBot: Sent help message.")
+  } catch {
+    console.log("Error sending help message.")
+  }
+}
 
+console.log("MelonsBot: Up and running!");
 
 client.on("ready", () => {
   console.log("MelonsBot: Ready and waiting!");
   console.log(`MelonsBot: Loaded ${totalMessageCount} messages.`)
-  client.channels.cache.get(channelBot).send(messageBotStart);
+  postHelpMessage();
 });
 
 var messageCounter = 1;
@@ -47,19 +51,22 @@ client.on("message", function(message) {
 
   if (message.channel.id === channelBot) {
     console.log("MelonsBot: Message received in Bot channel.");
-    if (message.content.startsWith(botCheckString)) {
+    if (message.content.startsWith(botCommands.botCheckString)) {
       console.log("MelonsBot: Bot check.");
       client.channels.cache.get(channelBot).send(messageBotOperational);
       return
-    } else if (message.content.startsWith(botTestString)) {
+    } else if (message.content.startsWith(botCommands.botTestString)) {
       // POST TEST TO BOT CHANNEL - CAN CHANGE TEST MESSAGE HERE.
       postChannelMessage(channelBot, 8);
-    } else if (message.content.startsWith(botAdvertString)) {
+    } else if (message.content.startsWith(botCommands.botAdvertString)) {
       // POST ADVERT TO CHANNEL - SET CHANNEL HERE.
       postAdvertMessage(channelBot);
-    } else if (message.content.startsWith(botRandomString)) {
+    } else if (message.content.startsWith(botCommands.botRandomString)) {
       // POST RANDOM TEST MESSAGE TO BOT CHANNEL.
       postChannelMessage(channelBot, getRandomInt(totalMessageCount));
+    } else if (message.content.startsWith(botCommands.botHelpString)) {
+      // POST HELP MESSAGE TO BOT CHANNEL.
+      postHelpMessage();
     }
     return
   }
