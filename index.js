@@ -3,29 +3,29 @@ const config = require("./config.json");
 const client = new Discord.Client();
 const { MessageEmbed } = require('discord.js');
 
+const messageInfoDict = require('./message_strings.js');
+
 const botCheckString = "!bot";
 const botTestString = "!test";
+const botRandomString = "!random";
 const botAdvertString = "!ad";
 
 const channelBot = "851879147001348119";
-const channelRaceControl = "845976526747074581"
-const channelPaddock = "788509056880738307"
+const channelRaceControl = "845976526747074581";
+const channelPaddock = "788509056880738307";
 
-const messageBotOperational = "MelonsBot is running!"
-const messageBotStart = "MelonsBot has started..."
+const messageBotOperational = "MelonsBot is running!";
+const messageBotStart = "MelonsBot has started...";
 
-const totalMessageCount = 8
+const totalMessageCount = Object.keys(messageInfoDict).length;
 const totalAdvertCount = 16
-
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
 
 console.log("MelonsBot: Up and running!");
 
 
 client.on("ready", () => {
   console.log("MelonsBot: Ready and waiting!");
+  console.log(`MelonsBot: Loaded ${totalMessageCount} messages.`)
   client.channels.cache.get(channelBot).send(messageBotStart);
 });
 
@@ -33,6 +33,10 @@ var messageCounter = 1;
 var advertCounter = 1;
 
 client.on("message", function(message) {
+
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+  }
 
   console.log("MelonsBot: Analysing incoming message.");
 
@@ -53,13 +57,15 @@ client.on("message", function(message) {
     } else if (message.content.startsWith(botAdvertString)) {
       // POST ADVERT TO CHANNEL - SET CHANNEL HERE.
       postAdvertMessage(channelBot);
+    } else if (message.content.startsWith(botRandomString)) {
+      // POST RANDOM TEST MESSAGE TO BOT CHANNEL.
+      postChannelMessage(channelBot, getRandomInt(totalMessageCount));
     }
     return
   }
 
   if (message.channel.id === channelRaceControl) {
     console.log("MelonsBot: Message sent by user in Race Control channel.");
-    lastMessageAuthor = "Test Author";
     messageCounter += 1;
 
     if (messageCounter % 5 === 0) {
@@ -67,11 +73,6 @@ client.on("message", function(message) {
       postChannelMessage(channelRaceControl, getRandomInt(totalMessageCount));
       console.log("MelonsBot: Sent race control message.");
     }
-  }
-
-  function setSassyString() {
-    let str = ", it's called a motor race. We went car racing."
-    return str;
   }
 
   function mergeSassyString(nickname, sassyString) {
@@ -94,24 +95,19 @@ client.on("message", function(message) {
   }
 
   async function postChannelMessage(channel, int) {
-    var messageDict = {
-      0: "Race Control is actively monitoring this channel. When reporting incidents, please remember to include the car number, lap number and any other details you feel are important.",
-      1: "Please remember that Race Control will not comment on individual incidents, except when a penalty is applied.",
-      2: "Fun fact: Melons closest relatives are squashes and cucumbers.",
-      3: "The stewards are easily startled. Please do not tap on the glass...",
-      4: "If we're investigating an incident, we'll add the melon emoji to the message.",
-      5: "Warnings and penalties will be posted in the race-updates channel.",
-      6: "Fun fact: The 'D' in Andy D Oakley stands for 'Divebomb'.",
-      7: "Fun fact: The inaugral Melons 24h event was won by Rust Bucket Racing and Was Cookin Racing Adventures.",
-    }
+    var messageDict = messageInfoDict
     
     try {
       const nickname = await setNickname()
       const firstName = editNickName(nickname)
-      const sassyString = setSassyString(firstName)
-      messageDict[8] = mergeSassyString(firstName, sassyString);
-      client.channels.cache.get(channel).send(messageDict[int]);
-      console.log("MelonsBot: Sent auto-message.")
+
+      if (int == 8) {
+        const specialMessage = mergeSassyString(firstName, messageDict[8]);
+        client.channels.cache.get(channel).send(specialMessage);
+      } else {
+        client.channels.cache.get(channel).send(messageDict[int]);
+      }
+      console.log(`MelonsBot: Sent auto-message ${int}.`)
     } catch {
       console.log("Error sending bot message.")
     }
