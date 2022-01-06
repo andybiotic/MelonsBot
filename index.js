@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const config = require("./config.json");
 const client = new Discord.Client();
 const { MessageEmbed } = require('discord.js');
+const fs = require('fs');
 
 const messageInfoDict = require('./message_strings.js');
 const botCommands = require('./bot_commands.js');
@@ -14,7 +15,7 @@ const channelPaddock = "788509056880738307";
 const messageBotOperational = "MelonsBot is running!";
 
 const totalMessageCount = Object.keys(messageInfoDict).length;
-const totalAdvertCount = 16
+const totalAdvertCount = 20
 
 async function postHelpMessage() {
   try {
@@ -25,11 +26,30 @@ async function postHelpMessage() {
   }
 }
 
+function checkImagesAtStartup() {
+  try {
+    for (let i = 1; i <= totalAdvertCount; i++) {
+      if (fs.existsSync(`./melonsbot/images/discordimage_${advertCounter}.png`)) {
+        console.log(`Check ${i}/${totalAdvertCount} completed.`)
+        advertCounter += 1
+      } else {
+      console.log(`Failed to load advert ${i}. Check name and file location.`)
+      process.kill(process.pid, 'SIGTERM')
+      }
+    }
+    advertCounter = 1
+    console.log("All adverts loaded.") 
+  } catch {
+    console.log("Startup Error.")
+  }
+}
+
 console.log("MelonsBot: Up and running!");
 
 client.on("ready", () => {
   console.log("MelonsBot: Ready and waiting!");
   console.log(`MelonsBot: Loaded ${totalMessageCount} messages.`)
+  checkImagesAtStartup();
   postHelpMessage();
 });
 
