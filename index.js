@@ -14,7 +14,8 @@ const channelPaddock = "788509056880738307";
 
 const messageBotOperational = "MelonsBot is running!";
 
-const totalMessageCount = Object.keys(messageInfoDict).length;
+const totalRaceControlMessageCount = Object.keys(messageInfoDict.messageInfoDict).length;
+const totalPaddockMessageCount = Object.keys(messageInfoDict.paddockMessageStrings).length;
 const totalAdvertCount = 20
 
 async function postHelpMessage() {
@@ -23,6 +24,15 @@ async function postHelpMessage() {
     console.log("MelonsBot: Sent help message.")
   } catch {
     console.log("Error sending help message.")
+  }
+}
+
+async function postReminderMessage(channel) {
+  try {
+    client.channels.cache.get(channel).send(botCommands.reminderInformation);
+    console.log("MelonsBot: Sent reminder message.")
+  } catch {
+    console.log("Error sending reminder message.")
   }
 }
 
@@ -48,12 +58,13 @@ console.log("MelonsBot: Up and running!");
 
 client.on("ready", () => {
   console.log("MelonsBot: Ready and waiting!");
-  console.log(`MelonsBot: Loaded ${totalMessageCount} messages.`)
+  console.log(`MelonsBot: Loaded ${totalRaceControlMessageCount} messages.`)
   checkImagesAtStartup();
   postHelpMessage();
 });
 
-var messageCounter = 1;
+var raceControlMessageCounter = 1;
+var paddockMessageCounter = 1;
 var advertCounter = 1;
 
 client.on("message", function(message) {
@@ -87,17 +98,23 @@ client.on("message", function(message) {
     } else if (message.content.startsWith(botCommands.botHelpString)) {
       // POST HELP MESSAGE TO BOT CHANNEL.
       postHelpMessage();
+    } else if (message.content.startsWith(botCommands.botReminderString)) {
+      // POST REMINDER TO CHANNEL - SET CHANNEL HERE.
+      postReminderMessage(channelBot);
+    } else if (message.content.startsWith(botCommands.botPaddockString)) {
+      // POST MESSAGE TO PADDOCK - SET CHANNEL HERE.
+      postPaddockMessage(channelBot);
     }
     return
   }
 
   if (message.channel.id === channelRaceControl) {
     console.log("MelonsBot: Message sent by user in Race Control channel.");
-    messageCounter += 1;
+    raceControlMessageCounter += 1;
 
-    if (messageCounter % 5 === 0) {
+    if (raceControlMessageCounter % 5 === 0) {
       // AUTO POST RACE CONTROL MESSAGE HERE. ADJUST INT ABOVE FOR POSTING FREQUENCY.
-      postChannelMessage(channelRaceControl, getRandomInt(totalMessageCount));
+      postRaceControlMessage(channelRaceControl, getRandomInt(totalRaceControlMessageCount));
       console.log("MelonsBot: Sent race control message.");
     }
   }
@@ -121,15 +138,15 @@ client.on("message", function(message) {
     return nameComponents[0]
   }
 
-  async function postChannelMessage(channel, int) {
+  async function postRaceControlMessage(channel, int) {
     var messageDict = messageInfoDict
     
     try {
       const nickname = await setNickname()
       const firstName = editNickName(nickname)
 
-      if (int == 8) {
-        const specialMessage = mergeSassyString(firstName, messageDict[8]);
+      if (int == 6) {
+        const specialMessage = mergeSassyString(firstName, messageDict[6]);
         client.channels.cache.get(channel).send(specialMessage);
       } else {
         client.channels.cache.get(channel).send(messageDict[int]);
@@ -137,6 +154,21 @@ client.on("message", function(message) {
       console.log(`MelonsBot: Sent auto-message ${int}.`)
     } catch {
       console.log("Error sending bot message.")
+    }
+  }
+
+  async function postPaddockMessage(channel) {
+    var messageDict = messageInfoDict.paddockMessageStrings
+
+    try {
+      client.channels.cache.get(channel).send(messageDict[paddockMessageCounter]);
+      if (paddockMessageCounter == totalPaddockMessageCount) {
+        paddockMessageCounter = 1
+      } else {
+        paddockMessageCounter += 1
+      }
+    } catch {
+      console.log("Error sending paddock message.")
     }
   }
 
