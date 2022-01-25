@@ -12,11 +12,42 @@ const channelBot = "851879147001348119";
 const channelRaceControl = "845976526747074581";
 const channelPaddock = "788509056880738307";
 
+var raceModeOn = false
+var paddockMessageTarget = channelBot
+var raceControlMessageTarget = channelBot
+
 const messageBotOperational = "MelonsBot is running!";
 
 const totalRaceControlMessageCount = Object.keys(messageInfoDict.messageInfoDict).length;
 const totalPaddockMessageCount = Object.keys(messageInfoDict.paddockMessageStrings).length;
 const totalAdvertCount = 20
+
+function switchRaceMode() {
+  if(raceModeOn == false) {
+    raceModeOn = true
+    paddockMessageTarget = channelPaddock
+    raceControlMessageTarget = channelRaceControl
+    postBotSwitchMessage(channelBot)
+    console.log("MelonsBot: Race Mode enabled.")
+  } else {
+    raceModeOn = false
+    paddockMessageTarget = channelBot
+    raceControlMessageTarget = channelBot
+    postBotSwitchMessage(channelBot)
+    console.log("MelonsBot: Test Mode enabled.")
+  }
+}
+
+function postBotSwitchMessage(channel) {
+  var modeString = ""
+
+  if(raceModeOn == true) {
+    modeString = "Race Mode enabled. WARNING: Any paddock messages, adverts or race control messages will be sent to the whole channel."
+  } else {
+    modeString = "Test Mode enabled."
+  }
+  client.channels.cache.get(channel).send(modeString);
+}
 
 async function postHelpMessage() {
   try {
@@ -91,7 +122,7 @@ client.on("message", function(message) {
       postChannelMessage(channelBot, 8);
     } else if (message.content.startsWith(botCommands.botAdvertString)) {
       // POST ADVERT TO CHANNEL - SET CHANNEL HERE.
-      postAdvertMessage(channelBot);
+      postAdvertMessage(paddockMessageTarget);
     } else if (message.content.startsWith(botCommands.botRandomString)) {
       // POST RANDOM TEST MESSAGE TO BOT CHANNEL.
       postChannelMessage(channelBot, getRandomInt(totalMessageCount));
@@ -100,10 +131,13 @@ client.on("message", function(message) {
       postHelpMessage();
     } else if (message.content.startsWith(botCommands.botReminderString)) {
       // POST REMINDER TO CHANNEL - SET CHANNEL HERE.
-      postReminderMessage(channelBot);
+      postReminderMessage(paddockMessageTarget);
     } else if (message.content.startsWith(botCommands.botPaddockString)) {
       // POST MESSAGE TO PADDOCK - SET CHANNEL HERE.
-      postPaddockMessage(channelBot);
+      postPaddockMessage(paddockMessageTarget);
+    } else if (message.content.startsWith(botCommands.botSwitchModeString)) {
+      // SWITCHES BETWEEN TEST MODE AND RACE MODE.
+      switchRaceMode();
     }
     return
   }
@@ -114,7 +148,7 @@ client.on("message", function(message) {
 
     if (raceControlMessageCounter % 5 === 0) {
       // AUTO POST RACE CONTROL MESSAGE HERE. ADJUST INT ABOVE FOR POSTING FREQUENCY.
-      postRaceControlMessage(channelRaceControl, getRandomInt(totalRaceControlMessageCount));
+      postRaceControlMessage(raceControlMessageTarget, getRandomInt(totalRaceControlMessageCount));
       console.log("MelonsBot: Sent race control message.");
     }
   }
