@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const messageInfoDict = require('./message_strings.js');
 const botCommands = require('./bot_commands.js');
+const importer = require('./messageStringImporter.js');
 
 // Channel IDs. Do not change.
 const channelBot = "851879147001348119";
@@ -18,8 +19,10 @@ var raceControlMessageTarget = channelBot
 
 const messageBotOperational = "MelonsBot is running!";
 
+var paddockMessages = ["TEST 1", "TEST 2"]
+var paddockMessageTotal = 0
+
 const totalRaceControlMessageCount = Object.keys(messageInfoDict.messageInfoDict).length;
-const totalPaddockMessageCount = Object.keys(messageInfoDict.paddockMessageStrings).length;
 const totalAdvertCount = 20
 
 function switchRaceMode() {
@@ -85,17 +88,29 @@ function checkImagesAtStartup() {
   }
 }
 
+async function loadMessagesAtStartup() {
+  try {
+    paddockMessages = importer.importStrings()
+    paddockMessageTotal = paddockMessages.length
+    console.log(`MelonsBot: Loaded ${paddockMessageTotal} paddock messages.`)
+  } catch {
+    console.log("Failed to load paddock messages.")
+  }
+}
+
 console.log("MelonsBot: Up and running!");
 
 client.on("ready", () => {
   console.log("MelonsBot: Ready and waiting!");
-  console.log(`MelonsBot: Loaded ${totalRaceControlMessageCount} messages.`)
+  console.log(`MelonsBot: Loaded ${totalRaceControlMessageCount} race control messages.`)
+
   checkImagesAtStartup();
+  loadMessagesAtStartup();
   postHelpMessage();
 });
 
 var raceControlMessageCounter = 1;
-var paddockMessageCounter = 1;
+var paddockMessageCounter = 0;
 var advertCounter = 1;
 
 client.on("message", function(message) {
@@ -191,13 +206,14 @@ client.on("message", function(message) {
     }
   }
 
-  async function postPaddockMessage(channel) {
-    var messageDict = messageInfoDict.paddockMessageStrings
-
+  function postPaddockMessage(channel) {
     try {
-      client.channels.cache.get(channel).send(messageDict[paddockMessageCounter]);
-      if (paddockMessageCounter == totalPaddockMessageCount) {
-        paddockMessageCounter = 1
+      const message = paddockMessages[paddockMessageCounter]
+      client.channels.cache.get(channel).send(message);
+      console.log(`MelonsBot: Sent paddock message ${paddockMessageCounter + 1}/${paddockMessageTotal}.`)
+      if (paddockMessageCounter == paddockMessageTotal - 1) {
+        console.log("MelonsBot: All messages sent. Starting over.")
+        paddockMessageCounter = 0
       } else {
         paddockMessageCounter += 1
       }
