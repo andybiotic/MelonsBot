@@ -6,6 +6,7 @@ const botHelpString = "!help";
 const botReminderString = "!remind";
 const botPaddockString = "!paddock";
 const botSwitchModeString = "!mode";
+const botResetString = "!reset";
 
 const startupMessage = 'MelonsBot is running. Type !help for commands and information.'
 const helpInformation = `
@@ -17,6 +18,7 @@ const helpInformation = `
 *${botRandomString}* -- Send a random message to the bot channel.
 *${botHelpString}* -- Repeat this message in the bot channel.
 *${botSwitchModeString}* -- Switch from Test Mode to Race Mode.
+*${botResetString}* -- Start all message cycles from the beginning.
 
 In Test Mode, all adverts and paddock messages are sent to the bot channel for testing. In Race Mode, messages are sent to the the paddock channel.
 
@@ -41,6 +43,7 @@ module.exports = {
     botReminderString, 
     botPaddockString,
     botSwitchModeString,
+    botResetString,
     startupMessage,
     helpInformation, 
     reminderInformation,

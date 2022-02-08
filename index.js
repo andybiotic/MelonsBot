@@ -128,6 +128,15 @@ client.on("message", function(message) {
     return Math.floor(Math.random() * max);
   }
 
+  function resetAllMessageCounts() {
+    raceControlMessageCounter = 1;
+    paddockMessageCounter = 0;
+    advertCounter = 1;
+    const message = "Reset MelonsBot. Ready to go again."
+    client.channels.cache.get(channelBot).send(message);
+    console.log("MelonsBot: Reset.");
+  }
+
   console.log("MelonsBot: Analysing incoming message.");
 
   if (message.author.bot) {
@@ -162,6 +171,9 @@ client.on("message", function(message) {
     } else if (message.content.startsWith(botCommands.botSwitchModeString)) {
       // SWITCHES BETWEEN TEST MODE AND RACE MODE.
       switchRaceMode();
+    } else if (message.content.startsWith(botCommands.botResetString)) {
+      // RESETS ALL MESSAGES, STARTS AGAIN.
+      resetAllMessageCounts();
     }
     return
   }
