@@ -19,7 +19,7 @@ var raceControlMessageTarget = channelBot
 
 const messageBotOperational = "MelonsBot is running!";
 
-var paddockMessages = ["TEST 1", "TEST 2"]
+var paddockMessages = [""]
 var paddockMessageTotal = 0
 
 const totalRaceControlMessageCount = Object.keys(messageInfoDict.messageInfoDict).length;
@@ -45,9 +45,9 @@ function postBotSwitchMessage(channel) {
   var modeString = ""
 
   if(raceModeOn == true) {
-    modeString = "Race Mode enabled. WARNING: Any paddock messages, adverts or race control messages will be sent to the whole channel."
+    modeString = "Race Mode enabled. WARNING: Any paddock messages, adverts and race control messages will be sent to the whole server."
   } else {
-    modeString = "Test Mode enabled."
+    modeString = "Test Mode enabled. Go nuts."
   }
   client.channels.cache.get(channel).send(modeString);
 }
@@ -58,6 +58,15 @@ async function postHelpMessage() {
     console.log("MelonsBot: Sent help message.")
   } catch {
     console.log("Error sending help message.")
+  }
+}
+
+async function postStartupMessage() {
+  try {
+    client.channels.cache.get(channelBot).send(botCommands.startupMessage);
+    console.log("MelonsBot: Sent startup message.")
+  } catch {
+    console.log("Error sending startup message.")
   }
 }
 
@@ -106,7 +115,7 @@ client.on("ready", () => {
 
   checkImagesAtStartup();
   loadMessagesAtStartup();
-  postHelpMessage();
+  postStartupMessage();
 });
 
 var raceControlMessageCounter = 1;
@@ -258,7 +267,12 @@ client.on("message", function(message) {
 
 client.on("guildMemberAdd", function(member){
     console.log("MelonsBot: User has joined - ");
-    member.send("Hello, and welcome to the Melons 24h! Please take a moment to set your nickname to match your name in iRacing (Go to the channel menu > tap Melons 24h at the top > Change Nickname). Once you've done that, come and join us in the paddock!")
+    member.send(`Hello, and welcome to the Melons 24h! 
+    
+    Please take a moment to set your nickname to match your name in iRacing (Go to the channel menu > tap Melons 24h at the top > Change Nickname). 
+    
+    Download the race programme from the website, and come and join us in the paddock!
+    `)
 });
 
 client.login(config.BOT_TOKEN);
