@@ -252,7 +252,7 @@ client.on("message", function(message) {
     try {
       const attachment = new Discord.MessageAttachment(`./melonsbot/images/discordimage_${advertCounter}.png`, `discordimage_${advertCounter}.png`);
       const embeddedAdvert = new MessageEmbed()
-      .setColor('#0099ff')
+      .setColor('#D5114C')
 	    .setTitle('A Message From Our Sponsors')
       .attachFiles(attachment)
       .setImage(`attachment://discordimage_${advertCounter}.png`);
