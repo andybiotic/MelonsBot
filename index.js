@@ -23,7 +23,7 @@ var paddockMessages = [""]
 var paddockMessageTotal = 0
 
 const totalRaceControlMessageCount = Object.keys(messageInfoDict.messageInfoDict).length;
-const totalAdvertCount = 20
+const totalAdvertCount = 22
 
 function switchRaceMode() {
   if(raceModeOn == false) {
