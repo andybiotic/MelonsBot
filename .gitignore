@@ -3,4 +3,4 @@ config.json
 package-lock.json
 node_modules/
 images/*.png
-.png
+*.png
