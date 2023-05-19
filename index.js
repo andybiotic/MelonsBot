@@ -4,7 +4,7 @@ const client = new Discord.Client();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
-const messageInfoDict = require('./message_strings.js');
+const controlMessages = require('./raceControlStrings.js');
 const botCommands = require('./bot_commands.js');
 const importer = require('./messageStringImporter.js');
 
@@ -22,7 +22,7 @@ const messageBotOperational = "MelonsBot is running!";
 var paddockMessages = [""]
 var paddockMessageTotal = 0
 
-const totalRaceControlMessageCount = Object.keys(messageInfoDict.messageInfoDict).length;
+const totalRaceControlMessageCount = Object.keys(controlMessages.raceControlDict).length;
 const totalAdvertCount = 22
 
 function switchRaceMode() {
@@ -138,6 +138,9 @@ client.on("message", function(message) {
   }
 
   console.log("MelonsBot: Analysing incoming message.");
+  if (raceModeOn == false) {
+    console.log(`MelonsBot: Message - ${message.content}`)
+  }
 
   if (message.author.bot) {
     console.log("MelonsBot: Message was sent by bot. Discarding.");
@@ -152,13 +155,13 @@ client.on("message", function(message) {
       return
     } else if (message.content.startsWith(botCommands.botTestString)) {
       // POST TEST TO BOT CHANNEL - CAN CHANGE TEST MESSAGE HERE.
-      postChannelMessage(channelBot, 8);
+      postRaceControlMessage(raceControlMessageTarget, getRandomInt(totalRaceControlMessageCount));
     } else if (message.content.startsWith(botCommands.botAdvertString)) {
       // POST ADVERT TO CHANNEL - SET CHANNEL HERE.
       postAdvertMessage(paddockMessageTarget);
     } else if (message.content.startsWith(botCommands.botRandomString)) {
       // POST RANDOM TEST MESSAGE TO BOT CHANNEL.
-      postChannelMessage(channelBot, getRandomInt(totalMessageCount));
+      postRaceControlMessage(raceControlMessageTarget, getRandomInt(totalRaceControlMessageCount));
     } else if (message.content.startsWith(botCommands.botHelpString)) {
       // POST HELP MESSAGE TO BOT CHANNEL.
       postHelpMessage();
@@ -209,17 +212,17 @@ client.on("message", function(message) {
   }
 
   async function postRaceControlMessage(channel, int) {
-    var messageDict = messageInfoDict
+    console.log(`${controlMessages.raceControlDict[0]}`)
     
     try {
       const nickname = await setNickname()
       const firstName = editNickName(nickname)
 
       if (int == 6) {
-        const specialMessage = mergeSassyString(firstName, messageDict[6]);
+        const specialMessage = mergeSassyString(firstName, controlMessages.raceControlDict[6]);
         client.channels.cache.get(channel).send(specialMessage);
       } else {
-        client.channels.cache.get(channel).send(messageDict[int]);
+        client.channels.cache.get(channel).send(controlMessages.raceControlDict[int]);
       }
       console.log(`MelonsBot: Sent auto-message ${int}.`)
     } catch {

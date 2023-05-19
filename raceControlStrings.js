@@ -1,4 +1,4 @@
- var messageInfoDict = {
+ var raceControlDict = {
     0: "Race Control is actively monitoring this channel. When reporting incidents, please remember to include the car number, timestamp and any other details you feel are important.",
     1: "Please remember that Race Control will not comment on individual incidents, except when a penalty is applied.",
     2: "Fun fact: Melons closest relatives are squashes and cucumbers.",
@@ -8,4 +8,4 @@
     6: ", it's called a motor race. We went car racing."
   }
 
-  module.exports = { messageInfoDict } ;
+  module.exports = { raceControlDict } ;
