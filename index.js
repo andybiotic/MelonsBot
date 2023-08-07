@@ -10,7 +10,7 @@ const importer = require('./messageStringImporter.js');
 
 // Channel IDs. Do not change.
 const channelBot = "851879147001348119";
-const channelRaceControl = "845976526747074581";
+const channelRaceControl = "1138183058307158046";
 const channelPaddock = "788509056880738307";
 
 var raceModeOn = false
@@ -23,7 +23,7 @@ var paddockMessages = [""]
 var paddockMessageTotal = 0
 
 const totalRaceControlMessageCount = Object.keys(controlMessages.raceControlDict).length;
-const totalAdvertCount = 22
+const totalAdvertCount = 28
 
 function switchRaceMode() {
   if(raceModeOn == false) {
