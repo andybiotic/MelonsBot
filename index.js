@@ -286,7 +286,9 @@ client.on("guildMemberAdd", function(member){
     
     Please take a moment to set your nickname to match your name in iRacing (Go to the channel menu > tap Melons 24h at the top > Change Nickname). 
     
-    Download the race programme from the website, and come and join us in the paddock!
+    The info channel contains important information and a link to download the race programme. 
+    
+    Come and join us in the paddock!
     `)
 });
 
