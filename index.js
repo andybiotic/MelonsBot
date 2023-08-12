@@ -139,7 +139,7 @@ client.on("message", function(message) {
 
   console.log("MelonsBot: Analysing incoming message.");
   if (raceModeOn == false) {
-    console.log(`MelonsBot: Message - ${message.content}`)
+    // console.log(`MelonsBot: Message - ${message.content}`)
   }
 
   if (message.author.bot) {
