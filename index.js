@@ -1,12 +1,13 @@
 const Discord = require("discord.js");
 const config = require("./config.json");
-const { Client, GatewayIntentBits, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, Events, Partials } = require('discord.js');
 const client = new Client({ 
   intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.MessageContent,
 		GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions,
 	],
   partials: [
     Partials.Message, 
@@ -21,6 +22,7 @@ const fs = require('fs');
 const controlMessages = require('./raceControlStrings.js');
 const botCommands = require('./bot_commands.js');
 const importer = require('./messageStringImporter.js');
+const { channel } = require("diagnostics_channel");
 
 // Channel IDs. Do not change.
 const channelBot = "851879147001348119";
@@ -304,6 +306,36 @@ client.on("guildMemberAdd", function(member){
     
     Come and join us in the paddock!
     `)
+});
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+	// When a reaction is received, check if the structure is partial
+	if (reaction.partial) {
+		// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+		try {
+			await reaction.fetch();
+		} catch (error) {
+			console.error('Something went wrong when fetching the message:', error);
+			// Return as `reaction.message.author` may be undefined/null
+			return;
+		}
+	}
+
+  function postRaceControlAcknowledgement(channel) {
+    let acknowledgeString = "Incident acknowledged. We are checking..."
+    client.channels.cache.get(channel).send(acknowledgeString);
+  }
+
+  var reactionChannel = channelBot
+  
+  if (raceModeOn) {
+    reactionChannel = channelRaceControl 
+  }
+
+  if (reactionChannel == reaction.message.channel.id && reaction.emoji.identifier == "%F0%9F%8D%89") {
+      postRaceControlAcknowledgement(reactionChannel)
+  }
+  
 });
 
 client.login(config.BOT_TOKEN);
