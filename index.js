@@ -1,6 +1,20 @@
 const Discord = require("discord.js");
 const config = require("./config.json");
-const client = new Discord.Client();
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
+const client = new Client({ 
+  intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
+	],
+  partials: [
+    Partials.Message, 
+    Partials.Channel, 
+    Partials.Reaction,
+    Partials.User
+  ] 
+});
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
@@ -122,7 +136,7 @@ var raceControlMessageCounter = 1;
 var paddockMessageCounter = 0;
 var advertCounter = 1;
 
-client.on("message", function(message) {
+client.on("messageCreate", function(message) {
 
   function getRandomInt(max) {
     return Math.floor(Math.random() * max);
