@@ -16,7 +16,6 @@ const client = new Client({
     Partials.User
   ] 
 });
-const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
 const controlMessages = require('./raceControlStrings.js');
@@ -98,18 +97,18 @@ async function postReminderMessage(channel) {
 function checkImagesAtStartup() {
   try {
     for (let i = 1; i <= totalAdvertCount; i++) {
-      if (fs.existsSync(`./melonsbot/images/discordimage_${advertCounter}.png`)) {
+      if (fs.existsSync(`./MelonsBot/images/discordimage_${advertCounter}.png`)) {
         console.log(`Check ${i}/${totalAdvertCount} completed.`)
         advertCounter += 1
       } else {
-      console.log(`Failed to load advert ${i}. Check name and file location.`)
-      process.kill(process.pid, 'SIGTERM')
+      console.log(`MelonsBot: STARTUP ERROR - Failed to load advert ${i}. Check name and file location.`)
       }
     }
     advertCounter = 1
-    console.log("All adverts loaded.") 
+    console.log("MelonsBot: Advert checks complete.") 
   } catch {
-    console.log("Startup Error.")
+    console.log("MelonsBot: Startup Error.")
+    process.kill(process.pid, 'SIGTERM')
   }
 }
 
@@ -262,37 +261,21 @@ client.on("messageCreate", function(message) {
     }
   }
 
-  async function createEmbeddedAdvert() {
+  async function postAdvertMessage(channel) {
+    console.log("MelonsBot: Posting Advert...")
+    const number = advertCounter
     var currentAdvert = advertCounter;
     if (currentAdvert > totalAdvertCount) {
       advertCounter = 1
     }
-
-    try {
-      const attachment = new Discord.MessageAttachment(`./melonsbot/images/discordimage_${advertCounter}.png`, `discordimage_${advertCounter}.png`);
-      const embeddedAdvert = new MessageEmbed()
+      const attachment = new Discord.AttachmentBuilder(`./MelonsBot/images/discordimage_${advertCounter}.png`, { name: `discordimage_${advertCounter}.png`});
+      const embeddedAdvert = new Discord.EmbedBuilder()
       .setColor('#D5114C')
 	    .setTitle('A Message From Our Sponsors')
-      .attachFiles(attachment)
       .setImage(`attachment://discordimage_${advertCounter}.png`);
       advertCounter += 1
-      return embeddedAdvert
-    } catch {
-      console.log("Error creating embedded advert.")
-      return
-    }
-  }
-
-  async function postAdvertMessage(channel) {
-    const number = advertCounter
-
-    try {
-      const embed = await createEmbeddedAdvert()
-      client.channels.cache.get(channel).send(embed)
+      client.channels.cache.get(channel).send({ embeds: [embeddedAdvert], files: [attachment] })
       console.log(`MelonsBot: Sent advert message ${number.toString()}/${totalAdvertCount.toString()}.`)
-    } catch {
-      console.log("Error.")
-    }
   }
 });
 
