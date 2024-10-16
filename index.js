@@ -17,6 +17,7 @@ const client = new Client({
   ] 
 });
 const fs = require('fs');
+const path = require('path')
 
 const controlMessages = require('./raceControlStrings.js');
 const botCommands = require('./bot_commands.js');
@@ -36,6 +37,9 @@ const messageBotOperational = "MelonsBot is running!";
 
 var paddockMessages = [""]
 var paddockMessageTotal = 0
+var raceControlMessageCounter = 1;
+var paddockMessageCounter = 0;
+var advertCounter = 1;
 
 const totalRaceControlMessageCount = Object.keys(controlMessages.raceControlDict).length;
 const totalAdvertCount = 28
@@ -95,13 +99,16 @@ async function postReminderMessage(channel) {
 }
 
 function checkImagesAtStartup() {
+  const imagePath = path.join(__dirname, 'images', `discordimage_${advertCounter}.png`)
+
   try {
     for (let i = 1; i <= totalAdvertCount; i++) {
-      if (fs.existsSync(`./MelonsBot/images/discordimage_${advertCounter}.png`)) {
+      if (fs.existsSync(imagePath)) {
         console.log(`Check ${i}/${totalAdvertCount} completed.`)
         advertCounter += 1
       } else {
-      console.log(`MelonsBot: STARTUP ERROR - Failed to load advert ${i}. Check name and file location.`)
+      console.log(`MelonsBot: STARTUP ERROR - Failed to load advert ${imagePath}. Check name and file location.`)
+      process.kill(process.pid, 'SIGTERM')
       }
     }
     advertCounter = 1
@@ -132,10 +139,6 @@ client.on("ready", () => {
   loadMessagesAtStartup();
   postStartupMessage();
 });
-
-var raceControlMessageCounter = 1;
-var paddockMessageCounter = 0;
-var advertCounter = 1;
 
 client.on("messageCreate", function(message) {
 
@@ -263,12 +266,13 @@ client.on("messageCreate", function(message) {
 
   async function postAdvertMessage(channel) {
     console.log("MelonsBot: Posting Advert...")
+    const imagePath = path.join(__dirname, 'images', `discordimage_${advertCounter}.png`)
     const number = advertCounter
     var currentAdvert = advertCounter;
     if (currentAdvert > totalAdvertCount) {
       advertCounter = 1
     }
-      const attachment = new Discord.AttachmentBuilder(`./MelonsBot/images/discordimage_${advertCounter}.png`, { name: `discordimage_${advertCounter}.png`});
+      const attachment = new Discord.AttachmentBuilder(imagePath, { name: `discordimage_${advertCounter}.png`});
       const embeddedAdvert = new Discord.EmbedBuilder()
       .setColor('#D5114C')
 	    .setTitle('A Message From Our Sponsors')

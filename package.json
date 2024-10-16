@@ -1,6 +1,6 @@
 {
   "name": "melonsbot",
-  "version": "3.0.0",
+  "version": "0.0.3",
   "description": "MelonsBot for Discord Server",
   "main": "index.js",
   "scripts": {
