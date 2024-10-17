@@ -1,20 +1,20 @@
 const Discord = require("discord.js");
 const config = require("./config.json");
 const { Client, GatewayIntentBits, Events, Partials } = require('discord.js');
-const client = new Client({ 
+const client = new Client({
   intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.MessageContent,
-		GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessageReactions,
-	],
+  ],
   partials: [
-    Partials.Message, 
-    Partials.Channel, 
+    Partials.Message,
+    Partials.Channel,
     Partials.Reaction,
     Partials.User
-  ] 
+  ]
 });
 const fs = require('fs');
 const path = require('path')
@@ -40,12 +40,12 @@ var paddockMessageTotal = 0
 var raceControlMessageCounter = 1;
 var paddockMessageCounter = 0;
 var advertCounter = 1;
+var totalAdvertCount = 0;
 
 const totalRaceControlMessageCount = Object.keys(controlMessages.raceControlDict).length;
-const totalAdvertCount = 28
 
 function switchRaceMode() {
-  if(raceModeOn == false) {
+  if (raceModeOn == false) {
     raceModeOn = true
     paddockMessageTarget = channelPaddock
     raceControlMessageTarget = channelRaceControl
@@ -63,7 +63,7 @@ function switchRaceMode() {
 function postBotSwitchMessage(channel) {
   var modeString = ""
 
-  if(raceModeOn == true) {
+  if (raceModeOn == true) {
     modeString = "Race Mode enabled. WARNING: Any paddock messages, adverts and race control messages will be sent to the whole server."
   } else {
     modeString = "Test Mode enabled. Go nuts."
@@ -99,20 +99,21 @@ async function postReminderMessage(channel) {
 }
 
 function checkImagesAtStartup() {
-  const imagePath = path.join(__dirname, 'images', `discordimage_${advertCounter}.png`)
-
   try {
-    for (let i = 1; i <= totalAdvertCount; i++) {
+    var imageIsAvailable = true
+    while (imageIsAvailable === true) {
+      let imagePath = path.join(__dirname, 'images', `discordimage_${advertCounter}.png`)
       if (fs.existsSync(imagePath)) {
-        console.log(`Check ${i}/${totalAdvertCount} completed.`)
+        console.log(`Check ${advertCounter} completed.`)
         advertCounter += 1
+        totalAdvertCount += 1
       } else {
-      console.log(`MelonsBot: STARTUP ERROR - Failed to load advert ${imagePath}. Check name and file location.`)
-      process.kill(process.pid, 'SIGTERM')
+        imageIsAvailable = false
+        console.log(`MelonsBot: Failed to load advert ${imagePath}. Continuing startup...`)
       }
     }
     advertCounter = 1
-    console.log("MelonsBot: Advert checks complete.") 
+    console.log("MelonsBot: Advert checks complete.")
   } catch {
     console.log("MelonsBot: Startup Error.")
     process.kill(process.pid, 'SIGTERM')
@@ -140,7 +141,7 @@ client.on("ready", () => {
   postStartupMessage();
 });
 
-client.on("messageCreate", function(message) {
+client.on("messageCreate", function (message) {
 
   function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -231,7 +232,7 @@ client.on("messageCreate", function(message) {
 
   async function postRaceControlMessage(channel, int) {
     console.log(`${controlMessages.raceControlDict[0]}`)
-    
+
     try {
       const nickname = await setNickname()
       const firstName = editNickName(nickname)
@@ -266,26 +267,24 @@ client.on("messageCreate", function(message) {
 
   async function postAdvertMessage(channel) {
     console.log("MelonsBot: Posting Advert...")
-    const imagePath = path.join(__dirname, 'images', `discordimage_${advertCounter}.png`)
-    const number = advertCounter
-    var currentAdvert = advertCounter;
-    if (currentAdvert > totalAdvertCount) {
+    if (advertCounter > totalAdvertCount) {
       advertCounter = 1
     }
-      const attachment = new Discord.AttachmentBuilder(imagePath, { name: `discordimage_${advertCounter}.png`});
-      const embeddedAdvert = new Discord.EmbedBuilder()
+    const imagePath = path.join(__dirname, 'images', `discordimage_${advertCounter}.png`)
+    const attachment = new Discord.AttachmentBuilder(imagePath, { name: `discordimage_${advertCounter}.png` });
+    const embeddedAdvert = new Discord.EmbedBuilder()
       .setColor('#D5114C')
-	    .setTitle('A Message From Our Sponsors')
+      .setTitle('A Message From Our Sponsors')
       .setImage(`attachment://discordimage_${advertCounter}.png`);
-      advertCounter += 1
-      client.channels.cache.get(channel).send({ embeds: [embeddedAdvert], files: [attachment] })
-      console.log(`MelonsBot: Sent advert message ${number.toString()}/${totalAdvertCount.toString()}.`)
+    advertCounter += 1
+    client.channels.cache.get(channel).send({ embeds: [embeddedAdvert], files: [attachment] })
+    console.log(`MelonsBot: Sent advert message ${advertCounter.toString()}/${totalAdvertCount.toString()}.`)
   }
 });
 
-client.on("guildMemberAdd", function(member){
-    console.log("MelonsBot: User has joined - ");
-    member.send(`Hello, and welcome to the Melons 24h! 
+client.on("guildMemberAdd", function (member) {
+  console.log("MelonsBot: User has joined - ");
+  member.send(`Hello, and welcome to the Melons 24h! 
     
     Please take a moment to set your nickname to match your name in iRacing (Go to the channel menu > tap Melons 24h at the top > Change Nickname). 
     
@@ -296,17 +295,17 @@ client.on("guildMemberAdd", function(member){
 });
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
-	// When a reaction is received, check if the structure is partial
-	if (reaction.partial) {
-		// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
-		try {
-			await reaction.fetch();
-		} catch (error) {
-			console.error('Something went wrong when fetching the message:', error);
-			// Return as `reaction.message.author` may be undefined/null
-			return;
-		}
-	}
+  // When a reaction is received, check if the structure is partial
+  if (reaction.partial) {
+    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+    try {
+      await reaction.fetch();
+    } catch (error) {
+      console.error('Something went wrong when fetching the message:', error);
+      // Return as `reaction.message.author` may be undefined/null
+      return;
+    }
+  }
 
   function postRaceControlAcknowledgement(channel) {
     let acknowledgeString = "Incident acknowledged. We are checking..."
@@ -314,15 +313,15 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   }
 
   var reactionChannel = channelBot
-  
+
   if (raceModeOn) {
-    reactionChannel = channelRaceControl 
+    reactionChannel = channelRaceControl
   }
 
   if (reactionChannel == reaction.message.channel.id && reaction.emoji.identifier == "%F0%9F%8D%89") {
-      postRaceControlAcknowledgement(reactionChannel)
+    postRaceControlAcknowledgement(reactionChannel)
   }
-  
+
 });
 
 client.login(config.BOT_TOKEN);
