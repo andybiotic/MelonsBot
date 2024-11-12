@@ -26,7 +26,7 @@ const { channel } = require("diagnostics_channel");
 
 // Channel IDs. Do not change.
 const channelBot = "851879147001348119";
-const channelRaceControl = "1138183058307158046";
+const channelRaceControl = "1295016917991686164";
 const channelPaddock = "788509056880738307";
 
 var raceModeOn = false
@@ -203,6 +203,7 @@ client.on("messageCreate", function (message) {
   if (message.channel.id === channelRaceControl) {
     console.log("MelonsBot: Message sent by user in Race Control channel.");
     raceControlMessageCounter += 1;
+    console.log(`MelonsBot: Race control counter = ${raceControlMessageCounter}`)
 
     if (raceControlMessageCounter % 5 === 0) {
       // AUTO POST RACE CONTROL MESSAGE HERE. ADJUST INT ABOVE FOR POSTING FREQUENCY.
