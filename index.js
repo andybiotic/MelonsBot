@@ -25,9 +25,9 @@ const importer = require('./messageStringImporter.js');
 const { channel } = require("diagnostics_channel");
 
 // Channel IDs. Do not change.
-const channelBot = "851879147001348119";
-const channelRaceControl = "1295016917991686164";
-const channelPaddock = "788509056880738307";
+const channelBot = config.CHANNEL_BOT;
+const channelRaceControl = config.CHANNEL_RACECONTROL;
+const channelPaddock = config.CHANNEL_PADDOCK;
 
 var raceModeOn = false
 var paddockMessageTarget = channelBot
@@ -130,7 +130,7 @@ async function loadMessagesAtStartup() {
   }
 }
 
-console.log("MelonsBot: Up and running!");
+console.log(`MelonsBot: Up and running! Version: ${config.MELONSBOT_VERSION}`);
 
 client.on("ready", () => {
   console.log("MelonsBot: Ready and waiting!");
