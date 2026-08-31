@@ -98,6 +98,43 @@ async function postReminderMessage(channel) {
   }
 }
 
+// Pulls the recorded timestamp out of an incident submission message.
+// Expected format: "!incidentsubmitted - Car 123, 00:10:20"
+function parseIncidentTimestamp(content) {
+  const parts = content.split(",");
+  return parts.length > 1 ? parts[parts.length - 1].trim() : "";
+}
+
+async function postIncidentMessage(content) {
+  const timestamp = parseIncidentTimestamp(content);
+  const incidentString = timestamp
+    ? `Incident submitted. Recorded timestamp: ${timestamp}`
+    : "Incident submitted.";
+  try {
+    client.channels.cache.get(raceControlMessageTarget).send(incidentString);
+    console.log(`MelonsBot: Sent incident message (${timestamp}).`)
+  } catch {
+    console.log("Error sending incident message.")
+  }
+}
+
+// Strips a leading command word from an incident message, leaving the
+// "Car 69, 00:03:54 - Warning" detail portion.
+function parseIncidentDetails(content, command) {
+  return content.slice(command.length).trim();
+}
+
+async function postIncidentResolvedMessage(content) {
+  const details = parseIncidentDetails(content, botCommands.botIncidentResolvedString);
+  const resolvedString = `Incident resolved: ${details}`;
+  try {
+    client.channels.cache.get(raceControlMessageTarget).send(resolvedString);
+    console.log(`MelonsBot: Sent incident resolved message (${details}).`)
+  } catch {
+    console.log("Error sending incident resolved message.")
+  }
+}
+
 function checkImagesAtStartup() {
   try {
     var imageIsAvailable = true
@@ -161,7 +198,14 @@ client.on("messageCreate", function (message) {
     // console.log(`MelonsBot: Message - ${message.content}`)
   }
 
-  if (message.author.bot) {
+  // Incident messages are delivered to the bot channel by a webhook, so
+  // they arrive flagged as bot/webhook messages. Let those through.
+  const isIncidentMessage =
+    message.channel.id === channelBot &&
+    (message.content.startsWith(botCommands.botIncidentString) ||
+      message.content.startsWith(botCommands.botIncidentResolvedString));
+
+  if (message.author.bot && !isIncidentMessage) {
     console.log("MelonsBot: Message was sent by bot. Discarding.");
     return;
   }
@@ -196,6 +240,12 @@ client.on("messageCreate", function (message) {
     } else if (message.content.startsWith(botCommands.botResetString)) {
       // RESETS ALL MESSAGES, STARTS AGAIN.
       resetAllMessageCounts();
+    } else if (message.content.startsWith(botCommands.botIncidentResolvedString)) {
+      // CONFIRM AN INCIDENT RESOLUTION (SENT HERE BY THE SHEET WEBHOOK).
+      postIncidentResolvedMessage(message.content);
+    } else if (message.content.startsWith(botCommands.botIncidentString)) {
+      // CONFIRM AN INCIDENT SUBMISSION (SENT HERE BY THE FORM WEBHOOK).
+      postIncidentMessage(message.content);
     }
     return
   }

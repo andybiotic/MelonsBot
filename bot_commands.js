@@ -7,8 +7,12 @@ const botReminderString = "!remind";
 const botPaddockString = "!paddock";
 const botSwitchModeString = "!mode";
 const botResetString = "!reset";
+const botIncidentString = "!incidentsubmitted";
+const botIncidentResolvedString = "!incidentresolved";
 
-const startupMessage = 'MelonsBot is running. Type !help for commands and information.'
+const config = require("./config.json");
+
+const startupMessage = `MelonsBot ${config.MELONSBOT_VERSION} is running. Type !help for commands and information.`
 const helpInformation = `
 *You can control MelonsBot here in the bot channel, using the commands listed below.*
 
@@ -44,6 +48,8 @@ module.exports = {
     botPaddockString,
     botSwitchModeString,
     botResetString,
+    botIncidentString,
+    botIncidentResolvedString,
     startupMessage,
     helpInformation, 
     reminderInformation,
