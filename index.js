@@ -28,10 +28,12 @@ const { channel } = require("diagnostics_channel");
 const channelBot = config.CHANNEL_BOT;
 const channelRaceControl = config.CHANNEL_RACECONTROL;
 const channelPaddock = config.CHANNEL_PADDOCK;
+const channelRaceUpdates = config.CHANNEL_RACEUPDATES;
 
 var raceModeOn = false
 var paddockMessageTarget = channelBot
 var raceControlMessageTarget = channelBot
+var raceUpdatesMessageTarget = channelBot
 
 const messageBotOperational = "MelonsBot is running!";
 
@@ -49,12 +51,14 @@ function switchRaceMode() {
     raceModeOn = true
     paddockMessageTarget = channelPaddock
     raceControlMessageTarget = channelRaceControl
+    raceUpdatesMessageTarget = channelRaceUpdates
     postBotSwitchMessage(channelBot)
     console.log("MelonsBot: Race Mode enabled.")
   } else {
     raceModeOn = false
     paddockMessageTarget = channelBot
     raceControlMessageTarget = channelBot
+    raceUpdatesMessageTarget = channelBot
     postBotSwitchMessage(channelBot)
     console.log("MelonsBot: Test Mode enabled.")
   }
@@ -111,7 +115,7 @@ async function postIncidentMessage(content) {
     ? `Incident submitted. Recorded timestamp: ${timestamp}`
     : "Incident submitted.";
   try {
-    client.channels.cache.get(raceControlMessageTarget).send(incidentString);
+    client.channels.cache.get(raceUpdatesMessageTarget).send(incidentString);
     console.log(`MelonsBot: Sent incident message (${timestamp}).`)
   } catch {
     console.log("Error sending incident message.")
@@ -128,7 +132,7 @@ async function postIncidentResolvedMessage(content) {
   const details = parseIncidentDetails(content, botCommands.botIncidentResolvedString);
   const resolvedString = `Incident resolved: ${details}`;
   try {
-    client.channels.cache.get(raceControlMessageTarget).send(resolvedString);
+    client.channels.cache.get(raceUpdatesMessageTarget).send(resolvedString);
     console.log(`MelonsBot: Sent incident resolved message (${details}).`)
   } catch {
     console.log("Error sending incident resolved message.")
@@ -146,7 +150,7 @@ async function postSpicyMessage(content) {
   const carNumber = parseSpicyCarNumber(content);
   const spicyString = `:hot_pepper: SPICY BADGE AWARDED TO CAR ${carNumber}. The stewards will review the team's conduct after the event.`;
   try {
-    client.channels.cache.get(raceControlMessageTarget).send(spicyString);
+    client.channels.cache.get(raceUpdatesMessageTarget).send(spicyString);
     console.log(`MelonsBot: Sent spicy badge message (Car ${carNumber}).`)
   } catch {
     console.log("Error sending spicy badge message.")
