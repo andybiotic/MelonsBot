@@ -367,34 +367,4 @@ client.on("guildMemberAdd", function (member) {
     `)
 });
 
-client.on(Events.MessageReactionAdd, async (reaction, user) => {
-  // When a reaction is received, check if the structure is partial
-  if (reaction.partial) {
-    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
-    try {
-      await reaction.fetch();
-    } catch (error) {
-      console.error('Something went wrong when fetching the message:', error);
-      // Return as `reaction.message.author` may be undefined/null
-      return;
-    }
-  }
-
-  function postRaceControlAcknowledgement(channel) {
-    let acknowledgeString = "Incident acknowledged. We are checking..."
-    client.channels.cache.get(channel).send(acknowledgeString);
-  }
-
-  var reactionChannel = channelBot
-
-  if (raceModeOn) {
-    reactionChannel = channelRaceControl
-  }
-
-  if (reactionChannel == reaction.message.channel.id && reaction.emoji.identifier == "%F0%9F%8D%89") {
-    postRaceControlAcknowledgement(reactionChannel)
-  }
-
-});
-
 client.login(config.BOT_TOKEN);
