@@ -9,6 +9,7 @@ const botSwitchModeString = "!mode";
 const botResetString = "!reset";
 const botIncidentString = "!incidentsubmitted";
 const botIncidentResolvedString = "!incidentresolved";
+const botSpicyString = "!spicy";
 
 const config = require("./config.json");
 
@@ -50,6 +51,7 @@ module.exports = {
     botResetString,
     botIncidentString,
     botIncidentResolvedString,
+    botSpicyString,
     startupMessage,
     helpInformation, 
     reminderInformation,

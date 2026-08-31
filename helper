@@ -10,11 +10,15 @@
  *   2. The "Complete" checkbox (column I) being ticked for a row:
  *        !incidentresolved Car 69, 00:03:54 - Warning
  *
+ *   3. The "Spicy" checkbox (column J) being ticked for a row:
+ *        !spicy Car 69
+ *
  * Columns used:
  *   B  Car Number
  *   C  Incident Timestamp
  *   H  Outcome            (e.g. "Warning")
  *   I  Complete           (checkbox)
+ *   J  Spicy              (checkbox)
  *
  * SETUP
  * 1. Open the Google Sheet, then Extensions > Apps Script.
@@ -46,6 +50,7 @@ var CAR_NUMBER_COLUMN = 2;   // B
 var INCIDENT_TIME_COLUMN = 3; // C
 var OUTCOME_COLUMN = 8;       // H
 var COMPLETE_COLUMN = 9;      // I - the "Complete" checkbox
+var SPICY_COLUMN = 10;        // J - the "Spicy" checkbox
 
 /**
  * Adds a helper menu to the spreadsheet UI.
@@ -114,7 +119,8 @@ function handleFormSubmit(e) {
 
 /**
  * On-edit handler. When the "Complete" checkbox in column I is ticked on
- * a submission row, announce the resolution to Discord.
+ * a submission row, announce the resolution to Discord. When the "Spicy"
+ * checkbox in column J is ticked, announce that separately.
  *
  * @param {Object} e on-edit event object.
  */
@@ -129,7 +135,12 @@ function handleEdit(e) {
   if (sheet.getName() !== SUBMISSIONS_SHEET_NAME) {
     return;
   }
-  if (range.getColumn() !== COMPLETE_COLUMN || range.getNumColumns() !== 1) {
+  if (range.getNumColumns() !== 1) {
+    return;
+  }
+
+  var column = range.getColumn();
+  if (column !== COMPLETE_COLUMN && column !== SPICY_COLUMN) {
     return;
   }
 
@@ -144,10 +155,16 @@ function handleEdit(e) {
   }
 
   var display = sheet
-    .getRange(row, 1, 1, OUTCOME_COLUMN)
+    .getRange(row, 1, 1, SPICY_COLUMN)
     .getDisplayValues()[0];
 
   var carNumber = String(display[CAR_NUMBER_COLUMN - 1]).trim();
+
+  if (column === SPICY_COLUMN) {
+    postToDiscord('!spicy Car ' + carNumber);
+    return;
+  }
+
   var incidentTime = String(display[INCIDENT_TIME_COLUMN - 1]).trim();
   var outcome = String(display[OUTCOME_COLUMN - 1]).trim();
 
@@ -174,6 +191,7 @@ function firstValue(answer) {
 function sendTestMessage() {
   postToDiscord('!incidentsubmitted - Car 123, 00:10:20');
   postToDiscord('!incidentresolved Car 69, 00:03:54 - Warning');
+  postToDiscord('!spicy Car 69');
 }
 
 /**

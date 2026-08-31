@@ -135,6 +135,24 @@ async function postIncidentResolvedMessage(content) {
   }
 }
 
+// Pulls the car number out of a spicy-badge message.
+// Expected format: "!spicy Car 69"
+function parseSpicyCarNumber(content) {
+  const match = content.match(/car\s*(\S+)/i);
+  return match ? match[1] : "";
+}
+
+async function postSpicyMessage(content) {
+  const carNumber = parseSpicyCarNumber(content);
+  const spicyString = `:hot_pepper: SPICY BADGE AWARDED TO CAR ${carNumber}. The stewards will review the team's conduct after the event.`;
+  try {
+    client.channels.cache.get(raceControlMessageTarget).send(spicyString);
+    console.log(`MelonsBot: Sent spicy badge message (Car ${carNumber}).`)
+  } catch {
+    console.log("Error sending spicy badge message.")
+  }
+}
+
 function checkImagesAtStartup() {
   try {
     var imageIsAvailable = true
@@ -203,7 +221,8 @@ client.on("messageCreate", function (message) {
   const isIncidentMessage =
     message.channel.id === channelBot &&
     (message.content.startsWith(botCommands.botIncidentString) ||
-      message.content.startsWith(botCommands.botIncidentResolvedString));
+      message.content.startsWith(botCommands.botIncidentResolvedString) ||
+      message.content.startsWith(botCommands.botSpicyString));
 
   if (message.author.bot && !isIncidentMessage) {
     console.log("MelonsBot: Message was sent by bot. Discarding.");
@@ -246,6 +265,9 @@ client.on("messageCreate", function (message) {
     } else if (message.content.startsWith(botCommands.botIncidentString)) {
       // CONFIRM AN INCIDENT SUBMISSION (SENT HERE BY THE FORM WEBHOOK).
       postIncidentMessage(message.content);
+    } else if (message.content.startsWith(botCommands.botSpicyString)) {
+      // AWARD A SPICY BADGE (SENT HERE BY THE SHEET WEBHOOK).
+      postSpicyMessage(message.content);
     }
     return
   }
