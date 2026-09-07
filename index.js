@@ -19,6 +19,12 @@ const client = new Client({
 const fs = require('fs');
 const path = require('path')
 
+// Safety net: never let a stray rejected promise (e.g. a failed Discord
+// API call) take the whole bot down.
+process.on('unhandledRejection', function (reason) {
+  console.log(`MelonsBot: Unhandled promise rejection: ${reason && reason.message ? reason.message : reason}`)
+});
+
 const controlMessages = require('./raceControlStrings.js');
 const botCommands = require('./bot_commands.js');
 const importer = require('./messageStringImporter.js');
@@ -359,16 +365,20 @@ client.on("messageCreate", function (message) {
   }
 });
 
-client.on("guildMemberAdd", function (member) {
+client.on("guildMemberAdd", async function (member) {
   console.log("MelonsBot: User has joined - ");
-  member.send(`Hello, and welcome to the Melons 24h! 
-    
-    Please take a moment to set your nickname to match your name in iRacing (Go to the channel menu > tap Melons 24h at the top > Change Nickname). 
-    
-    The info channel contains important information and a link to download the race programme. 
-    
+  try {
+    await member.send(`Hello, and welcome to the Melons 24h!
+
+    Please take a moment to set your nickname to match your name in iRacing (Go to the channel menu > tap Melons 24h at the top > Change Nickname).
+
+    The info channel contains important information and a link to download the race programme.
+
     Come and join us in the paddock!
     `)
+  } catch (err) {
+    console.log(`MelonsBot: Could not DM new member ${member.user?.tag ?? member.id}: ${err.message}`)
+  }
 });
 
 client.login(config.BOT_TOKEN);
