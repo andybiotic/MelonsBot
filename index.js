@@ -35,6 +35,10 @@ const channelBot = config.CHANNEL_BOT;
 const channelRaceControl = config.CHANNEL_RACECONTROL;
 const channelPaddock = config.CHANNEL_PADDOCK;
 const channelRaceUpdates = config.CHANNEL_RACEUPDATES;
+const channelTeamPrincipalRequests = config.CHANNEL_TEAM_PRINCIPAL_REQUESTS;
+
+// Role IDs. Do not change.
+const roleTeamPrincipal = config.ROLE_TEAM_PRINCIPAL;
 
 var raceModeOn = false
 var paddockMessageTarget = channelBot
@@ -163,6 +167,25 @@ async function postSpicyMessage(content) {
   }
 }
 
+// Grants the Team Principal role to the author of a message in the Team
+// Principal Requests channel, or removes it if they post "remove".
+async function handleTeamPrincipalRequest(message) {
+  const removeRequested = message.content.trim().toLowerCase() === "remove";
+  try {
+    const member = await message.guild.members.fetch(message.author.id);
+    if (removeRequested) {
+      await member.roles.remove(roleTeamPrincipal);
+      console.log(`MelonsBot: Removed Team Principal role from ${message.author.tag}.`)
+    } else {
+      await member.roles.add(roleTeamPrincipal);
+      console.log(`MelonsBot: Granted Team Principal role to ${message.author.tag}.`)
+    }
+    await message.react("🍉");
+  } catch (err) {
+    console.log(`MelonsBot: Error updating Team Principal role for ${message.author.tag}: ${err.message}`)
+  }
+}
+
 function checkImagesAtStartup() {
   try {
     var imageIsAvailable = true
@@ -279,6 +302,12 @@ client.on("messageCreate", function (message) {
       // AWARD A SPICY BADGE (SENT HERE BY THE SHEET WEBHOOK).
       postSpicyMessage(message.content);
     }
+    return
+  }
+
+  if (message.channel.id === channelTeamPrincipalRequests) {
+    console.log("MelonsBot: Message received in Team Principal Requests channel.");
+    handleTeamPrincipalRequest(message);
     return
   }
 
