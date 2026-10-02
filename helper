@@ -1,0 +1,222 @@
+/**
+ * MelonsBot helper - Google Apps Script
+ * ------------------------------------------------------------
+ * Bridges an incident-reporting Google Sheet to a Discord channel via an
+ * incoming webhook. Two things are announced:
+ *
+ *   1. A new form submission:
+ *        !incidentsubmitted - Car 123, 00:10:20
+ *
+ *   2. The "Complete" checkbox (column I) being ticked for a row:
+ *        !incidentresolved Car 69, 00:03:54 - Warning
+ *
+ *   3. The "Spicy" checkbox (column J) being ticked for a row:
+ *        !spicy Car 69
+ *
+ * Columns used:
+ *   B  Car Number
+ *   C  Incident Timestamp
+ *   H  Outcome            (e.g. "Warning")
+ *   I  Complete           (checkbox)
+ *   J  Spicy              (checkbox)
+ *
+ * SETUP
+ * 1. Open the Google Sheet, then Extensions > Apps Script.
+ * 2. Paste this file in as Code.gs.
+ * 3. In Discord: Channel settings > Integrations > Webhooks > New Webhook.
+ *    Copy the webhook URL and store it as a Script Property:
+ *      Project Settings > Script Properties > add
+ *        key:   DISCORD_WEBHOOK_URL
+ *        value: https://discord.com/api/webhooks/xxxxxxxx/yyyyyyyy
+ * 4. Run installTriggers() once and approve the permissions prompt.
+ *    (Menu also appears in the Sheet: "MelonsBot" > "Install triggers".)
+ *
+ * NOTE
+ * - Both handlers are installable triggers (simple triggers are not
+ *   allowed to call external URLs).
+ */
+
+var WEBHOOK_PROPERTY = 'DISCORD_WEBHOOK_URL';
+
+var SUBMISSIONS_SHEET_NAME = 'Form Responses 1'; // sheet the form writes to
+var HEADER_ROWS = 1;                             // header rows to ignore
+
+var CAR_NUMBER_HEADER = 'Car Number';
+var INCIDENT_TIME_HEADER = 'Incident Timestamp';
+
+// Column positions (1-based). Used directly for edit handling and as a
+// fallback when a form-submit event has no matching header.
+var CAR_NUMBER_COLUMN = 2;   // B
+var INCIDENT_TIME_COLUMN = 3; // C
+var OUTCOME_COLUMN = 8;       // H
+var COMPLETE_COLUMN = 9;      // I - the "Complete" checkbox
+var SPICY_COLUMN = 10;        // J - the "Spicy" checkbox
+
+/**
+ * Adds a helper menu to the spreadsheet UI.
+ */
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('MelonsBot')
+    .addItem('Install triggers', 'installTriggers')
+    .addItem('Send test message', 'sendTestMessage')
+    .addToUi();
+}
+
+/**
+ * Creates the installable on-form-submit and on-edit triggers. Safe to
+ * run more than once - it removes any existing copies first.
+ */
+function installTriggers() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    var fn = trigger.getHandlerFunction();
+    if (fn === 'handleFormSubmit' || fn === 'handleEdit') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger('handleFormSubmit')
+    .forSpreadsheet(ss)
+    .onFormSubmit()
+    .create();
+
+  ScriptApp.newTrigger('handleEdit')
+    .forSpreadsheet(ss)
+    .onEdit()
+    .create();
+
+  ss.toast('MelonsBot triggers installed.');
+}
+
+/* -------------------------------------------------------------------- */
+/* New submission                                                       */
+/* -------------------------------------------------------------------- */
+
+/**
+ * On-form-submit handler. Announces the submitted incident to Discord.
+ *
+ * @param {Object} e on-form-submit event object.
+ */
+function handleFormSubmit(e) {
+  var named = e && e.namedValues ? e.namedValues : {};
+  var values = e && e.values ? e.values : [];
+
+  var carNumber = firstValue(named[CAR_NUMBER_HEADER]) ||
+    String(values[CAR_NUMBER_COLUMN - 1] || '');
+  var incidentTime = firstValue(named[INCIDENT_TIME_HEADER]) ||
+    String(values[INCIDENT_TIME_COLUMN - 1] || '');
+
+  postToDiscord(
+    '!incidentsubmitted - Car ' + carNumber.trim() + ', ' + incidentTime.trim()
+  );
+}
+
+/* -------------------------------------------------------------------- */
+/* Incident resolved (Complete checkbox ticked)                         */
+/* -------------------------------------------------------------------- */
+
+/**
+ * On-edit handler. When the "Complete" checkbox in column I is ticked on
+ * a submission row, announce the resolution to Discord. When the "Spicy"
+ * checkbox in column J is ticked, announce that separately.
+ *
+ * @param {Object} e on-edit event object.
+ */
+function handleEdit(e) {
+  if (!e || !e.range) {
+    return;
+  }
+
+  var range = e.range;
+  var sheet = range.getSheet();
+
+  if (sheet.getName() !== SUBMISSIONS_SHEET_NAME) {
+    return;
+  }
+  if (range.getNumColumns() !== 1) {
+    return;
+  }
+
+  var column = range.getColumn();
+  if (column !== COMPLETE_COLUMN && column !== SPICY_COLUMN) {
+    return;
+  }
+
+  var row = range.getRow();
+  if (row <= HEADER_ROWS) {
+    return;
+  }
+
+  // Only act on a transition to checked. A ticked checkbox reports "TRUE".
+  if (String(e.value).toUpperCase() !== 'TRUE') {
+    return;
+  }
+
+  var display = sheet
+    .getRange(row, 1, 1, SPICY_COLUMN)
+    .getDisplayValues()[0];
+
+  var carNumber = String(display[CAR_NUMBER_COLUMN - 1]).trim();
+
+  if (column === SPICY_COLUMN) {
+    postToDiscord('!spicy Car ' + carNumber);
+    return;
+  }
+
+  var incidentTime = String(display[INCIDENT_TIME_COLUMN - 1]).trim();
+  var outcome = String(display[OUTCOME_COLUMN - 1]).trim();
+
+  postToDiscord(
+    '!incidentresolved Car ' + carNumber + ', ' + incidentTime + ' - ' + outcome
+  );
+}
+
+/* -------------------------------------------------------------------- */
+/* Helpers                                                              */
+/* -------------------------------------------------------------------- */
+
+/**
+ * @param {Array<string>|undefined} answer
+ * @return {string}
+ */
+function firstValue(answer) {
+  return answer && answer.length ? String(answer[0]) : '';
+}
+
+/**
+ * Sends sample messages so the webhook configuration can be verified.
+ */
+function sendTestMessage() {
+  postToDiscord('!incidentsubmitted - Car 123, 00:10:20');
+  postToDiscord('!incidentresolved Car 69, 00:03:54 - Warning');
+  postToDiscord('!spicy Car 69');
+}
+
+/**
+ * Posts a plain-text message to the configured Discord webhook.
+ *
+ * @param {string} content
+ */
+function postToDiscord(content) {
+  var url = PropertiesService.getScriptProperties().getProperty(WEBHOOK_PROPERTY);
+
+  if (!url) {
+    throw new Error(
+      'Missing script property "' + WEBHOOK_PROPERTY + '". Add your Discord webhook URL in Project Settings.'
+    );
+  }
+
+  var response = UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    muteHttpExceptions: true,
+    payload: JSON.stringify({ content: content })
+  });
+
+  var code = response.getResponseCode();
+  if (code < 200 || code >= 300) {
+    throw new Error('Discord webhook returned ' + code + ': ' + response.getContentText());
+  }
+}

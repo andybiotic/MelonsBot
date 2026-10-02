@@ -14,6 +14,7 @@ MelonsBot requires a `node.js` environment.
 - Nominate your channels. `CHANNEL_BOT` is used by MelonsBot to post confirmation messages and status reports. This should be a private channel. Any user in this channel can control the bot with commands. For example, `!bot` will ask MelonsBot to confirm it is operational.
 - `CHANNEL_RACECONTROL` should be a public channel intended to be used by event participants to communicate with the stewards. MelonsBot will post a random reminder in this channel after a set amount of messages.
 - MelonsBot will post messages and image embeds in the `CHANNEL_PADDOCK` channel.
+- `CHANNEL_RACEUPDATES` should be a public channel for incident status updates. In race mode, incident submitted / incident resolved / spicy badge messages are posted here; in test mode they go to the `bot` channel.
 
 ## Start MelonsBot
 Navigate to the MelonsBot folder and run `node index.js` from the terminal.
