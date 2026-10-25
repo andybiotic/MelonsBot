@@ -125,7 +125,7 @@ async function postIncidentMessage(content) {
     ? `Incident submitted. Recorded timestamp: ${timestamp}`
     : "Incident submitted.";
   try {
-    client.channels.cache.get(raceUpdatesMessageTarget).send(incidentString);
+    client.channels.cache.get(raceControlMessageTarget).send(incidentString);
     console.log(`MelonsBot: Sent incident message (${timestamp}).`)
   } catch {
     console.log("Error sending incident message.")
